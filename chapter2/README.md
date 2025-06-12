@@ -34,7 +34,7 @@ C:\Users\chenanguo＞echo %M2_HOME%
 C:\Users\chenanguo＞mvn -v
 ```
 
-### 2.2　在基于UNIX的系统（包括Linux、Mac OS以及FreeBSD等）上安装Maven
+#### 2.2　在基于UNIX的系统（包括Linux、Mac OS以及FreeBSD等）上安装Maven
 
 首先，与在Windows上安装Maven一样，需要检查JAVA_HOME环境变量以及Java命令。命令如下：
 ```
@@ -62,3 +62,13 @@ chenanguo@root:bin$export PATH=$PATH:$M2_HOME/bin
 chenanguo@root:bin$echo $M2_HOME
 chenanguo@root:bin$mvn -v
 ```
+
+#### 2.3　安装目录分析
+
+安装目录下的conf：该目录包含了一个非常重要的文件settings.xml。直接修改该文件，就能在机器上全局地定制Maven的行为。一般情况下，我们更偏向于复制该文件至～/.m2/目录下（～表示用户目录），然后修改该文件，在用户范围定制Maven的行为。后面将会多次提到settings.xml，并逐步分析其中的各个元素。
+
+我们先运行一条简单的命令：mvn help:system。该命令会打印出所有的Java系统属性和环境变量。
+
+在用户目录下可以发现.m2文件夹。默认情况下，该文件夹下放置了Maven本地仓库.m2/repository。所有的Maven构件都被存储到该仓库中，以方便重用。可以到～/.m2/repository/org/apache/maven/plugins/maven-help-plugins/目录下找到刚才下载的maven-help-plugin的pom文件和jar文件。
+
+由于Maven仓库是通过简单文件系统透明地展示给Maven用户的，有些时候可以绕过Maven直接查看或修改仓库文件，在遇到疑难问题时，这往往十分有用。

@@ -1,6 +1,6 @@
 ### 第2章 Maven的安装和配置
 
-在安装Maven之前，首先要确认你已经正确安装了JDK。Maven 3.9+需要JDK 8及以上版本。
+<strong><span style="color:red;">在安装Maven之前，首先要确认你已经正确安装了JDK。</span></strong>Maven 3.9+需要JDK 8及以上版本。
 
 #### 2.1　在Windows上安装Maven
 
@@ -26,7 +26,7 @@ D:\bin＞jar xvf "C:\Users\chenanguo\Downloads\apache-maven-3.9.10-bin.zip"
 
 打开系统属性面板（在桌面上右击“我的电脑”→“属性”），单击高级系统设置，再单击环境变量，在系统变量中新建一个变量，变量名为M2_HOME，变量值为Maven的安装目录`D:\bin\apache-maven-3.9.10`。单击“确定”按钮，接着在系统变量中找到一个名为Path的变量，在变量值的末尾加上`%M2_HOME%\bin;`。注意：多个值之间需要有分号隔开，然后单击“确定”按钮。至此，环境变量设置完成。
 
-值得注意的是Path环境变量。当我们在cmd中输入命令时，Windows首先会在当前目录中寻找可执行文件或脚本，如果没有找到，Windows会接着遍历环境变量Path中定义的路径。由于将%M2_HOME%\bin添加到了Path中，而这里%M2_HOME%实际上是引用了前面定义的另一个变量，其值是Maven的安装目录。因此，Windows会在执行命令时搜索目录D:\bin\apache-maven-3.9.10\bin，而mvn执行脚本的位置就是这里。
+值得注意的是<strong><span style="color:red;">Path环境变量</span></strong>。当我们在cmd中输入命令时，Windows首先会在当前目录中寻找可执行文件或脚本，如果没有找到，Windows会接着遍历环境变量Path中定义的路径。由于将%M2_HOME%\bin添加到了Path中，而这里%M2_HOME%实际上是引用了前面定义的另一个变量，其值是Maven的安装目录。因此，Windows会在执行命令时搜索目录D:\bin\apache-maven-3.9.10\bin，而mvn执行脚本的位置就是这里。
 
 现在打开一个新的cmd窗口（这里强调新的窗口是因为新的环境变量配置需要新的cmd窗口才能生效），运行如下命令检查Maven的安装情况：
 ```
@@ -65,10 +65,10 @@ chenanguo@root:bin$mvn -v
 
 #### 2.3　安装目录分析
 
-安装目录下的conf：该目录包含了一个非常重要的文件settings.xml。直接修改该文件，就能在机器上全局地定制Maven的行为。一般情况下，我们更偏向于复制该文件至～/.m2/目录下（～表示用户目录），然后修改该文件，在用户范围定制Maven的行为。后面将会多次提到settings.xml，并逐步分析其中的各个元素。
+安装目录下的conf：该目录包含了一个非常重要的文件settings.xml。直接修改该文件，就能在机器上全局地定制Maven的行为。一般情况下，<strong><span style="color:red;">我们更偏向于复制settings.xml文件至～/.m2/目录下（～表示用户目录），然后修改该文件，在用户范围定制Maven的行为。</span></strong>后面将会多次提到settings.xml，并逐步分析其中的各个元素。
 
 我们先运行一条简单的命令：mvn help:system。该命令会打印出所有的Java系统属性和环境变量。
 
-在用户目录下可以发现.m2文件夹。默认情况下，该文件夹下放置了Maven本地仓库.m2/repository。所有的Maven构件都被存储到该仓库中，以方便重用。可以到～/.m2/repository/org/apache/maven/plugins/maven-help-plugins/目录下找到刚才下载的maven-help-plugin的pom文件和jar文件。
+在用户目录下可以发现.m2文件夹。默认情况下，该文件夹下放置了<strong><span style="color:red;">Maven本地仓库.m2/repository。所有的Maven构件都被存储到该仓库中，以方便重用。</span></strong>可以到～/.m2/repository/org/apache/maven/plugins/maven-help-plugins/目录下找到刚才下载的maven-help-plugin的pom文件和jar文件。
 
 由于Maven仓库是通过简单文件系统透明地展示给Maven用户的，有些时候可以绕过Maven直接查看或修改仓库文件，在遇到疑难问题时，这往往十分有用。

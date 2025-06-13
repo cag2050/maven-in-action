@@ -16,9 +16,9 @@ Maven最大化地消除了构建的重复，抽象了构建生命周期，并且
 
 Maven抽象了一个完整的构建生命周期模型，这个模型吸取了大量其他的构建脚本和构建工具的优点，总结了大量项目的实际需求。
 
-Maven还为全世界的Java开发者提供了一个免费的中央仓库，在其中几乎可以找到任何的流行开源类库。通过一些Maven的衍生工具（如Nexus），我们还能对其进行快速地搜索。只要定位了坐标，Maven就能够帮我们自动下载，省去了手工劳动。
+Maven还为全世界的Java开发者提供了一个免费的中央仓库，在其中几乎可以找到任何的流行开源类库。通过一些Maven的衍生工具（如Nexus），我们还能对其进行快速地搜索。只要定位了坐标，Maven就能够帮我们<strong><span style="color:red;">自动下载</span></strong>，省去了手工劳动。
 
-Maven通过一个坐标系统准确地定位每一个构件（artifact），也就是通过一组坐标Maven能够找到任何一个Java类库（如jar文件）。
+Maven通过一个坐标系统准确地定位每一个构件（artifact），也就是<strong><span style="color:red;">通过一组坐标Maven能够找到任何一个Java类库（如jar文件）。</span></strong>
 
 主流IDE都集成了Maven，我们可以在IDE中方便地运行Maven执行构建。
 

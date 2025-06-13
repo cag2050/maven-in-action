@@ -6,8 +6,8 @@
 
 ##### 2.1.1　检查JDK安装
 ```
-C:\Users\chenanguo＞echo %JAVA_HOME%
-C:\Users\chenanguo＞java -version
+C:\Users\chenanguo＞ echo %JAVA_HOME%
+C:\Users\chenanguo＞ java -version
 ```
 上述命令首先检查环境变量JAVA_HOME是否指向了正确的JDK目录，接着尝试运行java命令。如果Windows无法执行java命令，或者无法找到JAVA_HOME环境变量，就需要检查Java是否安装了，或者环境变量是否设置正确。
 
@@ -20,7 +20,7 @@ C:\Users\chenanguo＞java -version
 
 将安装文件解压到指定的目录中，如：
 ```
-D:\bin＞jar xvf "C:\Users\chenanguo\Downloads\apache-maven-3.9.10-bin.zip"
+D:\bin＞ jar xvf "C:\Users\chenanguo\Downloads\apache-maven-3.9.10-bin.zip"
 ```
 这里的Maven安装目录是D:\bin\apache-maven-3.9.10，接着需要设置环境变量，将Maven安装配置到操作系统环境中。
 
@@ -30,37 +30,37 @@ D:\bin＞jar xvf "C:\Users\chenanguo\Downloads\apache-maven-3.9.10-bin.zip"
 
 现在打开一个新的cmd窗口（这里强调新的窗口是因为新的环境变量配置需要新的cmd窗口才能生效），运行如下命令检查Maven的安装情况：
 ```
-C:\Users\chenanguo＞echo %M2_HOME%
-C:\Users\chenanguo＞mvn -v
+C:\Users\chenanguo＞ echo %M2_HOME%
+C:\Users\chenanguo＞ mvn -v
 ```
 
 #### 2.2　在基于UNIX的系统（包括Linux、Mac OS以及FreeBSD等）上安装Maven
 
 首先，与在Windows上安装Maven一样，需要检查JAVA_HOME环境变量以及Java命令。命令如下：
 ```
-chenanguo@root:～$echo $JAVA_HOME
-chenanguo@root:～$java -version
+chenanguo@root:～$ echo $JAVA_HOME
+chenanguo@root:～$ java -version
 ```
 
 接着到 http://maven.apache.org/download.cgi 下载Maven安装文件，如apache-maven-3.9.10-bin.zip，把Maven安装文件下载到~/bin目录下，然后解压到本地目录：
 ```
-chenanguo@root:～$mkdir bin
-chenanguo@root:～$cd bin
-chenanguo@root:bin$unzip apache-maven-3.9.10-bin.zip
+chenanguo@root:～$ mkdir bin
+chenanguo@root:～$ cd bin
+chenanguo@root:bin$ unzip apache-maven-3.9.10-bin.zip
 ```
 现在已经创建好了一个Maven安装目录apache-maven-3.9.10。
 
 接下来，需要设置M2_HOME环境变量指向apache-maven-3.9.10，并且把Maven安装目录下的bin文件夹添加到系统环境变量PATH中：
 ```
-chenanguo@root:bin$export M2_HOME=/home/chenanguo/bin/apache-maven-3.9.10
-chenanguo@root:bin$export PATH=$PATH:$M2_HOME/bin
+chenanguo@root:bin$ export M2_HOME=/home/chenanguo/bin/apache-maven-3.9.10
+chenanguo@root:bin$ export PATH=$PATH:$M2_HOME/bin
 ```
 一般来说，需要将这两行命令加入到系统的登录shell脚本中去，以Ubuntu 8.10为例，编辑～/.bashrc文件，添加这两行命令。这样，每次启动一个终端，这些配置就能自动执行。
 
 至此，安装完成。可以运行以下命令检查Maven安装：
 ```
-chenanguo@root:bin$echo $M2_HOME
-chenanguo@root:bin$mvn -v
+chenanguo@root:bin$ echo $M2_HOME
+chenanguo@root:bin$ mvn -v
 ```
 
 #### 2.3　安装目录分析

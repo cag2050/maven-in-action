@@ -4,7 +4,7 @@ Maven，读音：/ˈmeɪvn/
 
 Maven现在几乎已经成为了所有Java开源项目的标配。
 
-Maven是<strong><span style="color:red;">基于Java平台的项目构建工具</span></strong>，能够帮我们自动化构建过程，从清理、编译、测试到生成报告，再到打包和部署。
+Maven是Apache组织中的一个颇为成功的开源项目，是<strong><span style="color:red;">基于Java平台的项目构建工具</span></strong>，能够帮我们自动化构建过程，从清理、编译、测试到生成报告，再到打包和部署。
 
 构建，就是编译、运行单元测试、生成文档、打包和部署等工作。
 

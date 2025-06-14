@@ -18,11 +18,7 @@ C:\Users\chenanguo＞ java -version
 
 ##### 2.1.3　本地安装
 
-将安装文件解压到指定的目录中，如：
-```
-D:\bin＞ jar xvf "C:\Users\chenanguo\Downloads\apache-maven-3.9.10-bin.zip"
-```
-这里的Maven安装目录是D:\bin\apache-maven-3.9.10，接着需要设置环境变量，将Maven安装配置到操作系统环境中。
+将安装文件解压到指定的目录：D:\bin\apache-maven-3.9.10，接着需要设置环境变量，将Maven安装配置到操作系统环境中。
 
 打开系统属性面板（在桌面上右击“我的电脑”→“属性”），单击高级系统设置，再单击环境变量，在系统变量中新建一个变量，变量名为M2_HOME，变量值为Maven的安装目录`D:\bin\apache-maven-3.9.10`。单击“确定”按钮，接着在系统变量中找到一个名为Path的变量，在变量值的末尾加上`%M2_HOME%\bin;`。注意：多个值之间需要有分号隔开，然后单击“确定”按钮。至此，环境变量设置完成。
 

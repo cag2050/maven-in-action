@@ -1,4 +1,4 @@
-### 第2章 Maven的安装和配置
+### 第二章 Maven的安装和配置
 
 <strong><span style="color:red;">在安装Maven之前，首先要确认你已经正确安装了JDK。</span></strong>Maven 3.9+需要JDK 8及以上版本。
 

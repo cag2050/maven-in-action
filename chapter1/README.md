@@ -1,6 +1,6 @@
 ### 第一章 Maven简介
 
-Maven，读音：/ˈmeɪvn/
+Maven，读音：/ˈmeɪvn/，中文意思是：专家。
 
 Maven现在几乎已经成为了所有Java开源项目的标配。
 

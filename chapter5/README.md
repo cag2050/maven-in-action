@@ -113,7 +113,7 @@ Maven依赖调解（Dependency Mediation）的原则：
 ```
 <project>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.juvenxu.mvnbook</groupId>
+    <groupId>com.chenanguo.mvnbook</groupId>
     <artifactId>project-b</artifactId>
     <version>1.0.0</version>
     <dependencies>
@@ -132,8 +132,57 @@ Maven依赖调解（Dependency Mediation）的原则：
     </dependencies>
 </project>
 ```
-使用＜optional＞元素表示mysql-connector-java和postgresql这两个依赖为可选依赖，它们只会对当前项目B产生影响，当其他项目依赖于B的时候，这两个依赖不会被传递。<strong><span style="color:red;">因此，当项目A依赖于项目B的时候，如果其实际使用基于MySQL数据库，那么在项目A中就需要显式地声明mysql-connector-java这一依赖。</span></strong>
+使用<optional>元素表示mysql-connector-java和postgresql这两个依赖为可选依赖，它们只会对当前项目B产生影响，当其他项目依赖于B的时候，这两个依赖不会被传递。<strong><span style="color:red;">因此，当项目A依赖于项目B的时候，如果其实际使用基于MySQL数据库，那么在项目A中就需要显式地声明mysql-connector-java这一依赖。</span></strong>
 
 在理想的情况下，是不应该使用可选依赖的。
 
 #### 5.9 最佳实践
+
+##### 5.9.1 排除依赖
+
+传递性依赖会给项目隐式地引入很多依赖，这极大地简化了项目依赖的管理，但是有些时候这种特性也会带来问题。例如，当前项目有一个第三方依赖，而这个第三方依赖由于某些原因依赖了另外一个类库的SNAPSHOT版本，那么这个SNAPSHOT就会成为当前项目的传递性依赖，而SNAPSHOT的不稳定性会直接影响到当前的项目。<strong><span style="color:red;">这时就需要排除掉该SNAPSHOT，并且在当前项目中声明该类库的某个正式发布的版本。</span></strong>
+
+```
+<dependency>
+    <groupId>com.chenanguo.mvnbook</groupId>
+    <artifactId>project-b</artifactId>
+    <version>1.0.0</version>
+    <exclusions>
+        <exclusion>
+            <groupId>com.chenanguo.mvnbook</groupId>
+            <artifactId>project-c</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+<dependency>
+    <groupId>com.chenanguo.mvnbook</groupId>
+    <artifactId>project-c</artifactId>
+    <version>1.1.0</version>
+</dependency>
+```
+上述代码中，项目A依赖于项目B，但是由于一些原因，不想引入传递性依赖C，而是自己显式地声明对于项目C 1.1.0版本的依赖。
+
+代码中使用exclusions元素声明排除依赖，exclusions可以包含一个或者多个exclusion子元素，因此可以排除一个或者多个传递性依赖。
+
+需要注意的是，<strong><span style="color:red;">声明exclusion的时候只需要groupId和artifactId，而不需要version元素</span></strong>，这是因为只需要groupId和artifactId就能唯一定位依赖图中的某个依赖。
+
+该例的依赖解析逻辑如图所示。
+<img src="https://res.weread.qq.com/wrepub/epub_602555_35">
+
+##### 5.9.2 Maven属性
+首先使用properties元素定义Maven属性，然后可以使用美元符号和大括弧环绕的方式引用Maven属性。举例：${springframework.version}。
+
+##### 5.9.3 优化依赖
+
+<strong><span style="color:red;">Maven会自动解析所有项目的直接依赖和传递性依赖，并且根据规则正确判断每个依赖的范围，对于一些依赖冲突，也能进行调节，以确保任何一个构件只有唯一的版本在依赖中存在。</span></strong>在这些工作之后，最后得到的那些依赖被称为已解析依赖（Resolved Dependency）。
+
+可以运行如下的命令查看当前项目的已解析依赖：`mvn dependency:list`。
+
+将直接在当前项目POM声明的依赖定义为顶层依赖，而这些顶层依赖的依赖则定义为第二层依赖，以此类推，有第三、第四层依赖。当这些依赖经Maven解析后，就会构成一个依赖树，通过这棵依赖树就能很清楚地看到某个依赖是通过哪条传递路径引入的。
+
+可以运行如下命令查看当前项目的依赖树：`mvn dependency:tree`。
+
+命令：`mvn dependency:analyze`工具可以帮助分析当前项目的依赖。
+该命令结果中重要的是两个部分。
+1. 首先是Used undeclared dependencies，意指项目中使用到的，但是没有显式声明的依赖。<strong><span style="color:red;">推荐：显式声明任何项目中直接用到的依赖。</span></strong>
+2. 还有一个重要的部分是Unused declared dependencies，意指项目中未使用的，但显式声明的依赖。需要注意的是，对于这样一类依赖，我们不应该简单地直接删除其声明，而是应该仔细分析。由于dependency:analyze只会分析<strong><span style="color:red;">编译主代码和测试代码</span></strong>需要用到的依赖，一些<strong><span style="color:red;">执行测试和运行时</span></strong>需要的依赖它就发现不了。当然，有时候确实能通过该信息找到一些没用的依赖，但一定要小心测试。

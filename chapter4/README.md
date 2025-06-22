@@ -2,7 +2,7 @@
 
 从本章开始，引入一个较为真实的背景案例：简单的账户注册服务，以演示Maven使用的真实场景。
 
-这里基于包名划分模块，这也是在Java中比较常见的做法。
+这里<strong><span style="color:red;">基于包名划分模块</span></strong>，这也是在Java中比较常见的做法。
 
 账户注册服务的模块划分，如下：
 1. com.chenanguo.mvnbook.account.service：系统的核心，它封装了所有下层细节，对外暴露简单的接口。

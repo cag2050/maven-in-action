@@ -215,3 +215,56 @@ usage: mvn [options] [<goal(s)>] [<phase(s)>]
 
 <strong><span style="color:red;">Maven会区别对待依赖的远程仓库与插件的远程仓库。不同于依赖的远程仓库配置repositories及其repository子元素，插件的远程仓库使用pluginRepositories和pluginRepository配置。</span></strong>
 
+一般来说，中央仓库所包含的插件完全能够满足我们的需要，因此也不需要配置其他的插件仓库。只有在很少的情况下，项目使用的插件无法在中央仓库找到，或者自己编写了插件，这个时候可以参考上述的配置，在POM或者settings.xml中加入其他的插件仓库配置。
+
+##### 7.8.2 插件的默认groupId
+在POM中配置插件的时候，如果该插件是Maven的官方插件（即如果其groupId为org.apache.maven.plugins），就可以省略groupId配置。
+
+不推荐使用Maven的这一机制，虽然这么做可以省略一些配置，但这样的配置会让团队中不熟悉Maven的成员感到费解，况且能省略的配置也就仅仅一行而已。
+
+##### 7.8.3 解析插件版本
+同样是为了简化插件的配置和使用，在用户没有提供插件版本的情况下，Maven会自动解析插件版本。
+
+Maven在超级POM中为所有核心插件设定了版本，超级POM是所有Maven项目的父POM，所有项目都继承这个超级POM的配置，因此，<strong><span style="color:red;">即使用户不加任何配置，Maven使用核心插件的时候，它们的版本就已经确定了。</span></strong>这些插件包括maven-clean-plugin、maven-compiler-plugin、maven-surefire-plugin等。
+
+如果用户使用某个插件时没有设定版本，而这个插件又不属于核心插件的范畴，Maven就会去检查所有仓库中可用的版本，然后做出选择。<strong><span style="color:red;">Maven 3当不属于核心的插件没有声明版本的时候，选择使用最新release版本。</span></strong>
+
+依赖Maven解析插件版本其实是不推荐的做法，即使Maven 3将版本解析到最新的release版本，也还是会有潜在的不稳定性。例如，可能某个插件发布了一个新的版本，而这个版本的行为与之前的版本发生了变化，这种变化就可能导致项目构建失败。因此，使用插件的时候，应该一直显式地设定版本。
+
+##### 7.8.4　解析插件前缀
+前面讲到mvn命令行支持使用插件前缀来简化插件的调用，现在解释Maven如何根据插件前缀解析得到插件的坐标。
+
+插件前缀与groupId:artifactId是一一对应的，这种匹配关系存储在仓库元数据中。这里的仓库元数据为groupId/maven-metadata.xml。主要的插件都位于http://repo1.maven.org/maven2/org/apache/maven/plugins/和http://repository.codehaus.org/org/code-haus/mojo/，相应地，Maven在解析插件仓库元数据的时候，会默认使用org.apache.maven.plugins和org.codehaus.mojo两个groupId。也可以通过配置settings.xml让Maven检查其他groupId上的插件仓库元数据：
+```
+<settings>
+    <pluginGroups>
+        <pluginGroup>com.your.plugins</pluginGroup>
+    </pluginGroups>
+</settings>
+```
+
+从中央仓库的org.apache.maven.plugins groupId下插件仓库元数据中截取的一些片段：
+```
+<metadata>
+    <plugins>
+        <plugin>
+            <name>Maven Clean Plugin</name>
+            <prefix>clean</prefix>
+            <artifactId>maven-clean-plugin</artifactId>
+        </plugin>
+        <plugin>
+            <name>Maven Compiler Plugin</name>
+            <prefix>compiler</prefix>
+            <artifactId>maven-compiler-plugin</artifactId>
+        </plugin>
+        <plugin>
+            <name>Maven Dependency Plugin</name>
+            <prefix>dependency</prefix>
+            <artifactId>maven-dependency-plugin</artifactId>
+        </plugin>
+    </plugins>
+</metadata>
+```
+查看prefix元素，可以看到maven-clean-plugin的前缀为clean、maven-compiler-plugin的前缀为compiler、maven-dependency-plugin的前缀为dependency。
+
+<strong><span style="color:red;">当Maven解析到dependency:tree这样的命令后，它首先基于默认的groupId归并所有插件仓库的元数据org/apache/maven/plugins/maven-metadata.xml；其次检查归并后的元数据，找到对应的artifactId为maven-dependency-plugin；然后结合当前元数据的groupId org.apache.maven.plugins；最后使用第7.8.3节描述的方法解析得到version，这时就得到了完整的插件坐标。如果org/apache/maven/plugins/maven-metadata.xml没有记录该插件前缀，则接着检查其他groupId下的元数据，如org/codehaus/mojo/maven-metadata.xml，以及用户自定义的插件组。如果所有元数据中都不包含该前缀，则报错。</span></strong>

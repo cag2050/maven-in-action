@@ -234,7 +234,7 @@ Maven在超级POM中为所有核心插件设定了版本，超级POM是所有Mav
 ##### 7.8.4　解析插件前缀
 前面讲到mvn命令行支持使用插件前缀来简化插件的调用，现在解释Maven如何根据插件前缀解析得到插件的坐标。
 
-插件前缀与groupId:artifactId是一一对应的，这种匹配关系存储在仓库元数据中。这里的仓库元数据为groupId/maven-metadata.xml。主要的插件都位于http://repo1.maven.org/maven2/org/apache/maven/plugins/和http://repository.codehaus.org/org/code-haus/mojo/，相应地，Maven在解析插件仓库元数据的时候，会默认使用org.apache.maven.plugins和org.codehaus.mojo两个groupId。也可以通过配置settings.xml让Maven检查其他groupId上的插件仓库元数据：
+插件前缀与groupId:artifactId是一一对应的，这种匹配关系存储在仓库元数据中。这里的仓库元数据为groupId/maven-metadata.xml。主要的插件都位于 http://repo1.maven.org/maven2/org/apache/maven/plugins/ 和 http://repository.codehaus.org/org/code-haus/mojo/ ，相应地，Maven在解析插件仓库元数据的时候，会默认使用org.apache.maven.plugins和org.codehaus.mojo两个groupId。也可以通过配置settings.xml让Maven检查其他groupId上的插件仓库元数据：
 ```
 <settings>
     <pluginGroups>

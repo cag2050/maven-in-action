@@ -19,7 +19,7 @@ account-persist模块与account-email模块的groupId和version完全一致，�
 
 为了能够使用一条命令就能构建account-email和account-persist两个模块，我们修改account/pom.xml:
 1. 添加`<packaging>pom</packaging>`，<strong><span style="color:red;">对于聚合模块来说，其打包方式packaging的值必须为pom，否则就无法构建。</span></strong>
-2. <strong><span style="color:red;">添加元素modules，这是实现聚合的最核心的配置。用户可以通过在一个打包方式为pom的Maven项目中声明任意数量的module元素来实现模块的聚合。这里每个module的值都是一个当前POM的相对目录。</span></strong>account-email、account-persist这两个目录各自包含了pom.xml、src/main/java/、src/test/java/等内容，离开account-aggregator也能独立构建。
+2. <strong><span style="color:red;">添加元素modules，这是实现聚合的最核心的配置。用户可以通过在一个打包方式为pom的Maven项目中声明任意数量的module元素来实现模块的聚合。这里每个module的值都是一个当前POM的相对目录。</span></strong>account-email、account-persist这两个目录各自包含了pom.xml、src/main/java/、src/test/java/等内容，离开account也能独立构建。
 ```
 <modules>
     <module>account-email</module>
@@ -71,7 +71,7 @@ account-email/pom.xml、account-persist/pom.xml，都添加：
 6. url：项目的URL地址。
 7. developers：项目的开发者信息。
 8. contributors：项目的贡献者信息。
-9. <strong><span style="color:red;">distributionManagement：项目的部署配置。
+9. <strong><span style="color:red;">distributionManagement：项目的部署配置。</span></strong>
 10. issueManagement：项目的缺陷跟踪系统信息。
 11. ciManagement：项目的持续集成系统信息。
 12. scm：项目的版本控制系统信息。

@@ -22,7 +22,11 @@
         </dependency>
     </dependencies>
 ```
+
 3. 编写代码：log-maven-plugin/src/main/java/com/chenanguo/mvnbook/LogMojo.java
+
 4. 安装到本地仓库：`mvn install`
+
 5. Maven命令行调用插件的log目标（使用message参数的默认值）：`mvn com.chenanguo.mvnbook:log-maven-plugin:1.0-SNAPSHOT:log`
+
 6. Maven命令行调用插件的log目标（message参数传入值）：`mvn com.chenanguo.mvnbook:log-maven-plugin:1.0-SNAPSHOT:log -Dmessage='Hello Tom.'`

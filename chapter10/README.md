@@ -14,4 +14,6 @@ Maven所做的只是在构建执行到特定生命周期阶段的时候，通过
 
 临时性地跳过测试代码的编译，Maven也允许你这么做，但记住这是不推荐的：$`mvn package -Dmaven.test.skip=true`；<strong><span style="color:red;">参数maven.test.skip同时控制了maven-compiler-plugin和maven-surefire-plugin两个插件的行为，测试代码编译跳过了，测试运行也跳过了。</span></strong>
 
+<strong><span style="color:red;">skipTests参数，只跳过测试，但是还会编译测试代码。</span></strong>
+
 maven-surefire-plugin提供了一个test参数让Maven用户能够在命令行指定要运行的测试用例。例如，如果只想运行RandomGeneratorTest，就可以使用如下命令：$`mvn test -Dtest=RandomGeneratorTest`

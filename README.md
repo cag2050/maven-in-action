@@ -1,4 +1,6 @@
 > 免费观看链接：https://www.bilibili.com/list/108624183/?desc=0
+> 
+> 《Maven 闯关大冒险》游戏： https://htmlpreview.github.io/?https://github.com/cag2050/maven-in-action/blob/master/maven-game.html
 
 ### 陈安国 老师
 1. 在多个互联网大厂工作过

@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maven 闯关大冒险</title>
+<style>
+:root{--bg:#0f172a;--panel:#1e293b;--panel2:#273449;--line:#334155;--text:#e2e8f0;--muted:#94a3b8;--accent:#f59e0b;--ok:#22c55e;--bad:#ef4444;--blue:#3b82f6}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:radial-gradient(circle at 50% -10%,#1e3a5f,#0f172a 60%) fixed;color:var(--text);min-height:100vh}
+.wrap{max-width:880px;margin:0 auto;padding:24px 16px 60px}
+.hidden{display:none!important}
+code{background:#0b1220;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-family:Menlo,Consolas,monospace;font-size:.92em;color:#fbbf24}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-weight:600;transition:transform .1s,filter .2s}
+.btn:hover{filter:brightness(1.1)}.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+.btn.gold{background:var(--accent);color:#1f1300}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* 首页 */
+.title{text-align:center;margin:10px 0 6px;font-size:34px;letter-spacing:2px}
+.title span{color:var(--accent)}
+.sub{text-align:center;color:var(--muted);margin-bottom:20px}
+.stats{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 18px;text-align:center;min-width:110px}
+.stat b{display:block;font-size:22px;color:var(--accent)}
+.stat small{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:left;color:var(--text);transition:transform .15s,border-color .15s;position:relative}
+.card:hover{transform:translateY(-3px);border-color:var(--blue)}
+.card .no{color:var(--muted);font-size:12px}
+.card .name{font-size:17px;font-weight:700;margin:4px 0 8px}
+.card .meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px}
+.card .stars{font-size:16px;letter-spacing:1px}
+.card.special{background:linear-gradient(135deg,#3b2a0a,#1e293b);border-color:#92400e}
+.card.wrongbook{background:linear-gradient(135deg,#3b0a0a,#1e293b);border-color:#7f1d1d}
+.footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
+.footer a{color:var(--muted)}
+
+/* 答题 */
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.topbar .lv{font-weight:700;flex:1;min-width:160px}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;white-space:nowrap}
+.bar{height:8px;background:var(--panel);border-radius:99px;overflow:hidden;margin-bottom:18px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--accent));transition:width .3s}
+.qbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px}
+.qtype{display:inline-block;font-size:12px;color:var(--accent);border:1px solid #92400e;border-radius:6px;padding:1px 8px;margin-bottom:10px}
+.qtext{font-size:19px;line-height:1.6;margin-bottom:18px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--panel2);border:2px solid transparent;color:var(--text);border-radius:12px;padding:12px 14px;line-height:1.5;transition:border-color .15s,background .15s}
+.opt:hover:not(:disabled){border-color:var(--blue)}
+.opt .k{flex:none;width:26px;height:26px;border-radius:7px;background:#0b1220;display:grid;place-items:center;font-size:13px;color:var(--muted)}
+.opt.ok{border-color:var(--ok);background:#14361f}
+.opt.bad{border-color:var(--bad);background:#3a1414}
+.opt:disabled{cursor:default}
+.tf{grid-template-columns:1fr 1fr}
+.tf .opt{justify-content:center;font-size:18px;font-weight:700}
+.zone-label{color:var(--muted);font-size:13px;margin:6px 0}
+.slots,.pool{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:8px;border-radius:12px}
+.slots{background:#0b1220;border:2px dashed var(--line)}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 12px}
+.chip:hover{border-color:var(--blue)}
+.slots .chip{background:#1e3a5f}
+.slots .chip::before{content:attr(data-n) ". ";color:var(--accent)}
+.row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.fb{margin-top:16px;border-radius:12px;padding:14px 16px;line-height:1.6}
+.fb.ok{background:#14361f;border:1px solid #166534}
+.fb.bad{background:#3a1414;border:1px solid #7f1d1d}
+.fb h3{margin:0 0 6px;font-size:17px}
+.fb .ans{margin-bottom:6px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.pop{animation:pop .35s}
+@keyframes pop{50%{transform:scale(1.03)}}
+.combo{color:var(--accent);font-weight:700}
+.hint{color:var(--muted);font-size:12px;text-align:center;margin-top:14px}
+
+/* 结算 */
+.result{text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:30px 20px;margin-top:30px}
+.result .big{font-size:56px;letter-spacing:6px;margin:10px 0}
+.result h2{margin:6px 0 4px;font-size:26px}
+.result .rows{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0}
+.result .row{justify-content:center}
+.confetti{position:fixed;top:-20px;font-size:22px;pointer-events:none;animation:fall linear forwards;z-index:9}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 首页 -->
+  <section id="home">
+    <h1 class="title">⚙️ Maven <span>闯关大冒险</span></h1>
+    <div class="sub">13 个章节关卡 · 答对得分连击加成 · 每关 3 颗心，心越多星越多</div>
+    <div class="stats">
+      <div class="stat"><b id="sStars">0</b><small>已获得星星</small></div>
+      <div class="stat"><b id="sClear">0/13</b><small>已通关章节</small></div>
+      <div class="stat"><b id="sScore">0</b><small>累计最高分</small></div>
+      <div class="stat"><b id="sWrong">0</b><small>错题本</small></div>
+    </div>
+    <div class="grid" id="map"></div>
+    <div class="footer">题目整理自《Maven实战》课程笔记 · 进度自动保存在本机浏览器 ·
+      <a href="#" id="resetBtn">清空进度</a></div>
+  </section>
+
+  <!-- 答题 -->
+  <section id="play" class="hidden">
+    <div class="topbar">
+      <button class="btn ghost" id="quitBtn">← 地图</button>
+      <div class="lv" id="lvName"></div>
+      <span class="pill" id="hearts"></span>
+      <span class="pill">得分 <b id="score">0</b></span>
+      <span class="pill" id="comboPill">连击 <b id="combo">0</b></span>
+    </div>
+    <div class="bar"><i id="prog"></i></div>
+    <div class="qbox" id="qbox"></div>
+    <div class="hint">快捷键：数字键 1-4 选择答案，回车键进入下一题</div>
+  </section>
+
+  <!-- 结算 -->
+  <section id="result" class="hidden"></section>
+</div>
+
+<script>
+/* ============================================================
+ * 题库
+ * 单选：{q, o:[选项...], a:正确选项下标, e:解析}
+ * 判断：{tf:true, q, a:true/false, e}
+ * 排序：{t:"o", q, o:[按正确顺序排列的选项], e}
+ * 文字中用 `反引号` 包起来的内容会显示为代码样式
+ * ============================================================ */
+const CHAPTERS = [
+{ id:1, title:"Maven简介", icon:"📘", qs:[
+  {q:"Maven 是一个什么工具？", o:["基于 Java 平台的项目构建工具","Java 集成开发环境（IDE）","分布式版本控制工具","Java Web 应用服务器"], a:0, e:"Maven 是 Apache 的开源项目，是基于 Java 平台的项目构建工具，能自动化完成清理、编译、测试、打包、部署等构建过程。"},
+  {q:"Maven 这个单词的中文意思是？", o:["专家","工匠","仓库","构建者"], a:0, e:"Maven，读音 /ˈmeɪvn/，意思是“专家”。"},
+  {q:"Maven 通过什么来准确定位每一个构件（artifact）？", o:["坐标","文件名","下载链接","Java 包名"], a:0, e:"通过一组坐标，Maven 就能找到任何一个 Java 类库（如 jar 文件），并自动下载。"},
+  {tf:true, q:"Maven 是跨平台的，在 Windows、Linux、Mac 上可以使用同样的命令。", a:true, e:"Maven 是跨平台的，无论在哪个系统上都可以使用同样的命令，比如 `mvn clean install`。"},
+  {q:"Maven 是声明式的，构建过程中各个阶段的实际工作由谁完成？", o:["插件","开发者手写的构建脚本","IDE","JDK"], a:0, e:"项目构建过程和各个阶段所需的工作都由插件实现，开发者只需要声明项目的基本元素。"},
+  {q:"能对 Maven 中央仓库进行快速搜索的衍生工具是？", o:["Nexus","Jenkins","Tomcat","JUnit"], a:0, e:"通过一些 Maven 的衍生工具（如 Nexus），可以对仓库中的构件进行快速搜索。"}
+]},
+{ id:2, title:"安装和配置", icon:"🔧", qs:[
+  {q:"安装 Maven 之前，首先要确认已经正确安装了什么？", o:["JDK","Tomcat","Git","Node.js"], a:0, e:"Maven 运行依赖 Java，Maven 3.9+ 需要 JDK 8 及以上版本。"},
+  {q:"环境变量为什么叫 `M2_HOME` 而不是 `M3_HOME`？", o:["为了区别于 Maven 1.x，M2 指 Maven 2.x 及以上版本","因为当前 Maven 最新版本是 2.x","M2 是 Maven 的官方缩写","M2 指存放在第二块磁盘上"], a:0, e:"M2 是指 Maven 2.x 及以上版本，用来区别 Maven 1.x。"},
+  {q:"一般推荐在哪里修改 settings.xml，在用户范围定制 Maven 的行为？", o:["`~/.m2/settings.xml`","`$M2_HOME/conf/settings.xml`","项目根目录下的 settings.xml","`/etc/maven/settings.xml`"], a:0, e:"`$M2_HOME/conf/settings.xml` 是全局配置；更推荐复制一份到 `~/.m2/` 下，在用户范围定制。"},
+  {q:"Maven 本地仓库的默认位置是？", o:["`~/.m2/repository`","`$M2_HOME/repository`","项目下的 `lib/` 目录","`~/.maven/lib`"], a:0, e:"默认情况下，用户目录下的 `.m2/repository` 就是本地仓库，所有 Maven 构件都存储在这里。"},
+  {q:"哪条命令会打印出所有的 Java 系统属性和环境变量？", o:["`mvn help:system`","`mvn -v`","`mvn help:describe`","`mvn dependency:list`"], a:0, e:"`mvn help:system` 会打印所有 Java 系统属性和环境变量；`mvn -v` 用于查看 Maven 版本、检查安装。"},
+  {q:"Windows 上配置完环境变量后，为什么要打开一个新的 cmd 窗口再验证？", o:["新的环境变量配置需要新的 cmd 窗口才能生效","旧窗口不支持 mvn 命令","新窗口才有管理员权限","这样可以清除 Maven 缓存"], a:0, e:"新的环境变量配置需要新的 cmd 窗口才能生效，然后运行 `mvn -v` 检查。"}
+]},
+{ id:3, title:"Maven使用入门", icon:"🚀", qs:[
+  {q:"Maven 项目的核心文件是？", o:["pom.xml","build.xml","settings.xml","Makefile"], a:0, e:"就像 Make 的 Makefile、Ant 的 build.xml，Maven 项目的核心是 pom.xml（Project Object Model）。"},
+  {q:"对于 Maven 2 和 Maven 3，`modelVersion` 的值只能是？", o:["4.0.0","2.0.0","3.0.0","1.0.0"], a:0, e:"modelVersion 指定当前 POM 模型的版本，对于 Maven 2 及 Maven 3 来说，只能是 4.0.0。"},
+  {q:"定义一个项目基本坐标的三个元素是？", o:["groupId、artifactId、version","groupId、name、version","artifactId、packaging、scope","name、version、packaging"], a:0, e:"groupId、artifactId 和 version 这三个元素定义了一个项目基本的坐标。"},
+  {q:"Maven 默认的测试代码目录是？", o:["`src/test/java`","`src/main/java`","`test/java`","`src/main/test`"], a:0, e:"默认主代码目录是 `src/main/java`，对应的测试代码目录是 `src/test/java`。"},
+  {q:"声明依赖时如果不写 `scope`，默认的依赖范围是？", o:["compile","test","provided","runtime"], a:0, e:"不声明依赖范围时默认为 compile，表示该依赖对主代码和测试代码都有效。"},
+  {q:"Maven 中负责执行测试的插件是？", o:["surefire","compiler","jar","install"], a:0, e:"`surefire:test` 任务运行测试并输出测试报告，surefire 是 Maven 中负责执行测试的插件。"},
+  {t:"o", q:"请按 Maven 约定的执行顺序排列这四个命令：", o:["mvn clean compile","mvn clean test","mvn clean package","mvn clean install"], e:"执行顺序是 compile → test → package → install，后面的命令会自动先执行前面的步骤。"},
+  {q:"artifactId 为 hello-world、version 为 1.0-SNAPSHOT 的项目，默认打包生成的 jar 文件名是？", o:["hello-world-1.0-SNAPSHOT.jar","hello-world.jar","1.0-SNAPSHOT-hello-world.jar","com.chenanguo.mvnbook.hello-world.jar"], a:0, e:"jar 文件按 artifactId-version.jar 的规则命名。"},
+  {q:"默认打包的 jar 不能直接运行。要生成带 Main-Class 的可执行 jar，课程中用的是哪个插件？", o:["maven-shade-plugin","maven-jar-plugin","maven-surefire-plugin","maven-install-plugin"], a:0, e:"借助 maven-shade-plugin 的 ManifestResourceTransformer 配置 mainClass，即可生成可直接 `java -jar` 运行的 jar。"},
+  {q:"版本号 `1.0-SNAPSHOT` 中的 SNAPSHOT 表示？", o:["快照，项目还处于开发中，是不稳定的版本","正式发布的稳定版本","已经废弃的版本","长期支持版本"], a:0, e:"SNAPSHOT 意为快照，说明该项目还处于开发中，是不稳定的版本。"},
+  {q:"`mvn clean install` 中的 install 做了什么？", o:["把项目输出的 jar 安装到 Maven 本地仓库","把 Maven 安装到操作系统","把 jar 部署到远程私服","安装项目所需的 JDK"], a:0, e:"install 将构件安装到本地仓库，只有安装到本地仓库之后，其他 Maven 项目才能使用它。"}
+]},
+{ id:4, title:"背景案例", icon:"🏗️", qs:[
+  {q:"账户注册服务案例中，模块是按什么划分的？", o:["基于包名划分","基于数据库表划分","基于开发人员划分","基于文件大小划分"], a:0, e:"案例基于包名划分模块，这是 Java 中比较常见的做法。"},
+  {q:"案例中负责账户信息增删改查（持久化）的模块是？", o:["account.persist","account.service","account.web","account.email"], a:0, e:"`com.chenanguo.mvnbook.account.persist` 处理账户信息的持久化，可以基于数据库或者文件。"},
+  {q:"案例中直接依赖 service 模块、包含 JSP、Servlet、web.xml 的模块是？", o:["account.web","account.captcha","account.persist","account.email"], a:0, e:"web 模块包含所有与 web 相关的内容，直接依赖 service 模块，使用它提供的服务。"},
+  {q:"案例中负责验证码 key 生成、图片生成和验证的模块是？", o:["account.captcha","account.email","account.service","account.persist"], a:0, e:"captcha 模块处理验证码相关功能，需要借助第三方类库实现。"}
+]},
+{ id:5, title:"坐标和依赖", icon:"🧭", qs:[
+  {q:"Maven 坐标的 5 个元素中，哪一个是不能直接定义的？", o:["classifier","packaging","version","groupId"], a:0, e:"groupId、artifactId、version 必须定义，packaging 可选（默认 jar），classifier 不能直接定义，附属构件由插件生成。"},
+  {q:"不定义 packaging 时，Maven 使用的默认值是？", o:["jar","war","pom","ear"], a:0, e:"当不定义 packaging 的时候，Maven 会使用默认值 jar。"},
+  {q:"项目构件文件名的一般规则是？", o:["artifactId-version[-classifier].packaging","groupId-artifactId.packaging","artifactId.version.jar","version-artifactId[-classifier].jar"], a:0, e:"一般规则为 artifactId-version[-classifier].packaging，[-classifier] 表示可选。"},
+  {q:"servlet-api 编译和测试时需要，运行时由容器提供。它最适合哪个依赖范围？", o:["provided","compile","runtime","test"], a:0, e:"provided 对编译和测试 classpath 有效，运行时无效，典型例子就是 servlet-api。"},
+  {q:"哪种依赖范围对测试和运行 classpath 有效，但编译主代码时无效？", o:["runtime","provided","system","compile"], a:0, e:"runtime：运行时依赖范围，对测试和运行 classpath 有效，编译主代码时无效。"},
+  {q:"依赖关系为 A→B→C→X(1.0)、A→D→X(2.0)，Maven 最终会使用哪个版本的 X？", o:["X(2.0)，路径最近者优先","X(1.0)，第一声明者优先","两个版本都会引入","构建报错"], a:0, e:"依赖调解第一原则：路径最近者优先。X(2.0) 路径长度为 2，比 X(1.0) 的 3 更短。"},
+  {q:"依赖关系为 A→B→Y(1.0)、A→C→Y(2.0)，POM 中 B 声明在 C 之前，会使用哪个版本的 Y？", o:["Y(1.0)","Y(2.0)","两个版本都会引入","构建报错"], a:0, e:"路径长度相同时，依赖调解第二原则是第一声明者优先，B 声明在前，所以用 Y(1.0)。"},
+  {q:"在 `<exclusion>` 中排除一个传递性依赖，需要填写哪些元素？", o:["只需要 groupId 和 artifactId","groupId、artifactId 和 version","只需要 artifactId","groupId、artifactId、version 和 scope"], a:0, e:"只需要 groupId 和 artifactId 就能唯一定位依赖图中的某个依赖，不需要 version。"},
+  {q:"项目 B 把 mysql-connector-java 声明为 `<optional>true</optional>`，项目 A 依赖 B，A 会得到 MySQL 驱动吗？", o:["不会，可选依赖不会传递，A 需要自己显式声明","会，作为 compile 范围传递性依赖","会，但范围变成 provided","只有在运行时才会得到"], a:0, e:"可选依赖只对当前项目 B 有影响，不会被传递。A 如果要用 MySQL，需要自己显式声明。"},
+  {q:"想查看某个有漏洞的 jar 是通过哪条路径被引入的，应该用哪个命令？", o:["`mvn dependency:tree`","`mvn dependency:list`","`mvn dependency:analyze`","`mvn help:system`"], a:0, e:"`mvn dependency:tree` 展示依赖树，能清楚看到某个依赖是通过哪条传递路径引入的。"},
+  {q:"使用 system 依赖范围时，必须额外配置哪个元素？", o:["systemPath","optional","classifier","exclusions"], a:0, e:"system 范围的依赖必须通过 systemPath 显式指定依赖文件的路径，可能造成构建不可移植，应谨慎使用。"},
+  {q:"`mvn dependency:analyze` 报告的 Unused declared dependencies，正确的处理方式是？", o:["仔细分析后再决定，不要直接删除","全部直接删除","全部改成 test 范围","全部改成 optional"], a:0, e:"该命令只分析编译主代码和测试代码用到的依赖，发现不了执行测试和运行时需要的依赖，所以不能简单删除。"}
+]},
+{ id:6, title:"仓库", icon:"🏦", qs:[
+  {q:"对 Maven 来说，仓库只分为哪两类？", o:["本地仓库和远程仓库","中央仓库和私服","发布仓库和快照仓库","依赖仓库和插件仓库"], a:0, e:"仓库只分为本地仓库和远程仓库，中央仓库和私服都是特殊的远程仓库。"},
+  {q:"Maven 自带的中央仓库使用的 id 是？", o:["central","maven","default","repo1"], a:0, e:"中央仓库 id 为 central，其他仓库声明如果也用这个 id，就会覆盖中央仓库的配置。"},
+  {q:"访问远程仓库的认证信息（用户名、密码）必须配置在哪里？", o:["settings.xml","pom.xml","MANIFEST.MF","环境变量 M2_HOME"], a:0, e:"POM 会被提交到代码仓库供所有成员访问，而 settings.xml 一般只放在本机，所以认证信息放在 settings.xml 更安全。"},
+  {q:"settings.xml 中 server 的认证信息是靠什么和 POM 中的仓库关联起来的？", o:["server 的 id 与 repository 的 id 完全一致","server 的 url 与仓库 url 一致","server 的 username 与 groupId 一致","按配置的先后顺序自动匹配"], a:0, e:"server 元素的 id 必须与 POM 中需要认证的 repository 元素的 id 完全一致。"},
+  {q:"仓库配置中 `updatePolicy` 的默认值是？", o:["daily","always","never","interval:60"], a:0, e:"updatePolicy 控制检查更新的频率，默认 daily，每天检查一次。"},
+  {q:"想强制 Maven 立即检查快照版本的更新，可以加哪个命令行参数？", o:["-U","-X","-o","-q"], a:0, e:"例如 `mvn clean install -U`，强制让 Maven 检查更新。"},
+  {tf:true, q:"版本 `2.1-20091214.221414-13` 是一个稳定的发布版本。", a:false, e:"这是带时间戳的快照版本，表示 2009 年 12 月 14 日 22:14:14 的第 13 次快照，和 2.1-SNAPSHOT 一样是不稳定的。"},
+  {q:"项目版本为 2.1-SNAPSHOT 时，执行 `mvn clean deploy` 会部署到哪里？", o:["distributionManagement 中的 snapshotRepository","distributionManagement 中的 repository","中央仓库","本地仓库"], a:0, e:"快照版本部署到快照版本仓库地址，否则部署到发布版本仓库地址。"},
+  {q:"镜像配置 `<mirrorOf>*</mirrorOf>` 的含义是？", o:["该镜像匹配所有仓库，所有请求都转到它","只作为中央仓库的镜像","不匹配任何仓库","只匹配快照仓库"], a:0, e:"常和私服结合使用，私服成为所有仓库的镜像，用一个地址就能访问所有需要的外部仓库。"},
+  {q:"`checksumPolicy` 的默认值 warn 表示校验和验证失败时会怎样？", o:["输出警告信息，构建继续","让构建失败","完全忽略","重新下载 3 次"], a:0, e:"warn 时输出警告；fail 时构建失败；ignore 时完全忽略校验和错误。"}
+]},
+{ id:7, title:"生命周期和插件", icon:"🔄", qs:[
+  {q:"Maven 拥有哪三套相互独立的生命周期？", o:["clean、default、site","clean、build、deploy","compile、test、package","init、build、release"], a:0, e:"clean 用来清理项目，default 用来构建项目，site 用来建立项目站点。"},
+  {q:"用户调用 clean 生命周期的 clean 阶段时，实际会执行哪些阶段？", o:["pre-clean 和 clean","只有 clean","pre-clean、clean、post-clean","clean 和 post-clean"], a:0, e:"阶段有前后依赖，调用某阶段会先执行它之前的所有阶段，但不会执行它之后的阶段。"},
+  {t:"o", q:"请按顺序排列 default 生命周期中的这些阶段：", o:["compile","test-compile","test","package","install","deploy"], e:"编译主代码 → 编译测试代码 → 运行测试 → 打包 → 安装到本地仓库 → 部署到远程仓库。"},
+  {t:"o", q:"请按顺序排列 site 生命周期的四个阶段：", o:["pre-site","site","post-site","site-deploy"], e:"site 生命周期依次为 pre-site → site → post-site → site-deploy。"},
+  {tf:true, q:"Maven 的生命周期本身会完成编译源代码等实际工作。", a:false, e:"生命周期是抽象的，本身不做任何实际工作，实际任务都交由插件完成。"},
+  {q:"`dependency:tree` 中，冒号前后分别表示什么？", o:["插件前缀 : 插件目标","插件目标 : 插件前缀","groupId : artifactId","生命周期 : 阶段"], a:0, e:"冒号前面是插件前缀，冒号后面是该插件的目标。"},
+  {q:"多个插件目标绑定到同一个生命周期阶段时，执行顺序由什么决定？", o:["插件在 POM 中声明的先后顺序","插件名的字母顺序","插件版本号大小","随机执行"], a:0, e:"绑定到不同阶段时按阶段先后执行；绑定到同一阶段时按插件声明的先后顺序执行。"},
+  {q:"插件的远程仓库应该用哪个元素配置？", o:["pluginRepositories","repositories","distributionManagement","mirrors"], a:0, e:"Maven 区别对待依赖的远程仓库（repositories）和插件的远程仓库（pluginRepositories）。"},
+  {q:"Maven 3 中，非核心插件没有声明版本时，会使用哪个版本？", o:["最新的 release 版本","最新的 SNAPSHOT 版本","最早的版本","构建直接报错"], a:0, e:"Maven 3 会选择最新 release 版本，但这有潜在的不稳定性，推荐一直显式设定插件版本。"},
+  {q:"maven-compiler-plugin 的目标前缀（Goal Prefix）是？", o:["compiler","maven-compiler","compile","mc"], a:0, e:"所以可以用 `mvn help:describe -Dplugin=compiler` 这样的简写方式。"},
+  {q:"命令行中通过什么方式配置插件参数，比如跳过测试？", o:["`-D参数键=参数值`","`--set 参数键 参数值`","`-P参数键=参数值`","修改 MANIFEST.MF"], a:0, e:"例如 `mvn install -Dmaven.test.skip=true`。-D 是 Java 自带的设置系统属性的参数，Maven 重用了它。"},
+  {q:"`mvn clean install` 实际执行了哪些阶段？", o:["pre-clean、clean，以及 default 生命周期从 validate 到 install 的所有阶段","只执行 clean 和 install 两个阶段","clean 生命周期全部阶段和 install","default 生命周期的所有阶段，包括 deploy"], a:0, e:"该命令组合了两个生命周期，构建前先清理项目是一个很好的实践。"}
+]},
+{ id:8, title:"聚合与继承", icon:"🧩", qs:[
+  {q:"聚合模块（父模块）的 packaging 必须是什么？", o:["pom","jar","war","maven-plugin"], a:0, e:"聚合 POM 与继承关系中父 POM 的 packaging 都必须是 pom，否则无法构建。"},
+  {q:"实现聚合最核心的配置元素是？", o:["modules","parent","dependencyManagement","pluginManagement"], a:0, e:"在 packaging 为 pom 的项目中声明任意数量的 module 元素来实现聚合，每个 module 的值是相对当前 POM 的目录。"},
+  {q:"子模块 parent 元素中 relativePath 的默认值是？", o:["`../pom.xml`","`./pom.xml`","`../../pom.xml`","没有默认值，必须填写"], a:0, e:"Maven 默认父 POM 在上一层目录下；找不到时再从本地仓库查找。"},
+  {q:"父 POM 中 dependencyManagement 声明的依赖，会给子模块引入实际依赖吗？", o:["不会，子模块在 dependencies 中声明后才生效，且可省略 version 和 scope","会，所有子模块自动引入","只给第一个子模块引入","只在运行时引入"], a:0, e:"dependencyManagement 不引入实际依赖，但能约束 dependencies 下的依赖使用，统一版本。"},
+  {q:"import 依赖范围只在哪个元素下才有效果？", o:["dependencyManagement","dependencies","pluginManagement","build"], a:0, e:"import 范围通常指向一个 type 为 pom 的模块，把其中的 dependencyManagement 配置导入合并到当前 POM。"},
+  {q:"用来统一管理插件配置的元素是？", o:["pluginManagement","dependencyManagement","pluginRepositories","modules"], a:0, e:"pluginManagement 中的配置不会造成实际的插件调用，只有 POM 中配置了 groupId 和 artifactId 相匹配的 plugin 时才生效。"},
+  {q:"任何一个 Maven 项目都隐式地继承了什么？", o:["超级 POM","settings.xml","中央仓库的 POM","聚合模块的 POM"], a:0, e:"超级 POM 的配置就是 Maven 所提倡的约定，这是“约定优于配置”的由来。"},
+  {q:"裁剪反应堆时，`-am` 参数的作用是？", o:["同时构建所列模块的依赖模块","同时构建依赖于所列模块的模块","从指定模块继续构建","只构建指定的模块"], a:0, e:"-am：also-make；-amd：also-make-dependents；-pl：构建指定模块；-rf：resume-from，从指定模块继续。"},
+  {q:"聚合与继承的主要目的分别是？", o:["聚合为了快速构建项目，继承为了消除重复配置","聚合为了消除重复配置，继承为了快速构建项目","两者目的完全相同","聚合为了打包，继承为了部署"], a:0, e:"两者是不同的概念，但实际项目中一个 POM 常常既是聚合 POM 又是父 POM。"},
+  {q:"多模块项目中，模块 A 依赖 B，B 又依赖 A，执行构建会怎样？", o:["Maven 报错","先构建 A 再构建 B","先构建 B 再构建 A","随机选择一个顺序"], a:0, e:"模块间的依赖关系构成有向非循环图（DAG），不允许出现循环。"}
+]},
+{ id:9, title:"Nexus私服", icon:"🗄️", qs:[
+  {q:"当前最流行的 Maven 仓库管理软件是？", o:["Nexus","Jenkins","SonarQube","GitLab"], a:0, e:"Nexus 分社区版和专业版，社区版足以满足大部分用户的需要。"},
+  {q:"Nexus 中 Maven 仓库有哪三种类型？", o:["group、hosted、proxy","local、remote、central","release、snapshot、mixed","public、private、shared"], a:0, e:"group（仓库组）、hosted（宿主）、proxy（代理）；release/snapshot/mixed 是 Version policy。"},
+  {q:"Nexus 内置的 maven-central 仓库属于哪种类型？", o:["proxy（代理）","hosted（宿主）","group（仓库组）","local（本地）"], a:0, e:"maven-central 代理 Maven 中央仓库，策略为 Release。"},
+  {q:"Nexus 内置的 maven-public 仓库属于哪种类型？", o:["group（仓库组）","proxy（代理）","hosted（宿主）","snapshot"], a:0, e:"maven-public 把 maven-central、maven-releases、maven-snapshots 聚合起来，通过一个统一的地址提供服务。"},
+  {q:"备份 Nexus 时，默认应该备份哪个目录？", o:["sonatype-work/","nexus-3.x/bin/","~/.m2/repository","nexus-3.x/lib/"], a:0, e:"sonatype-work/ 包含用户特定的配置、日志、仓库文件；安装目录可以从安装包直接获得。"},
+  {q:"settings.xml 不支持直接配置 repositories，想为本机所有项目添加私服仓库，应该借助什么？", o:["Profile","dependencyManagement","modules","pluginManagement"], a:0, e:"把仓库配置放到 settings.xml 的 profile 中，再通过 activeProfiles 激活。"},
+  {q:"想让所有 Maven 下载请求都只经过私服，应该怎么配置？", o:["配置一个 mirrorOf 为 * 的镜像，地址指向私服","在每个 POM 里删除中央仓库","把私服地址写进 MANIFEST.MF","设置 updatePolicy 为 never"], a:0, e:"创建一个匹配任何仓库的镜像，Maven 对任何仓库的下载请求都会转到私服。"},
+  {tf:true, q:"Nexus 的仓库对匿名用户是只读的，部署构件需要在 settings.xml 中配置认证信息。", a:true, e:"需要在 settings.xml 的 servers 中配置用户名密码，且 server 的 id 要与 distributionManagement 中仓库的 id 一致。"}
+]},
+{ id:10, title:"使用Maven测试", icon:"🧪", qs:[
+  {q:"Maven 中的测试运行器（Test Runner）是哪个插件？", o:["maven-surefire-plugin","maven-compiler-plugin","maven-jar-plugin","maven-help-plugin"], a:0, e:"maven-surefire-plugin 能很好地兼容 JUnit 3、JUnit 4 以及 TestNG。"},
+  {q:"以下哪个测试类不符合 surefire 默认的命名模式，不会被自动执行？", o:["UserChecker.java","TestUser.java","UserTest.java","UserTestCase.java"], a:0, e:"默认模式：`**/Test*.java`、`**/*Test.java`、`**/*TestCase.java`。"},
+  {q:"`-Dmaven.test.skip=true` 和 `-DskipTests` 的区别是？", o:["前者跳过测试编译和运行，后者只跳过运行、仍会编译测试代码","两者完全一样","前者只跳过运行，后者跳过编译和运行","前者只对 JUnit 有效，后者只对 TestNG 有效"], a:0, e:"maven.test.skip 同时控制 maven-compiler-plugin 和 maven-surefire-plugin 两个插件的行为。"},
+  {q:"只想运行 RandomGeneratorTest 这一个测试类，命令是？", o:["`mvn test -Dtest=RandomGeneratorTest`","`mvn test RandomGeneratorTest`","`mvn test -Pclass=RandomGeneratorTest`","`mvn surefire RandomGeneratorTest`"], a:0, e:"maven-surefire-plugin 提供了 test 参数，用来在命令行指定要运行的测试用例。"},
+  {q:"测试报告中，产品代码抛出了一个未被捕获的空指针异常，会计入哪一项？", o:["Errors","Failures","Skipped","不会计入"], a:0, e:"Failures 是结果与预期值不一致；Errors 是发生了未预期的错误；Skipped 是被标记忽略的测试。"},
+  {q:"在 JUnit 中用哪个注解标记忽略某个测试方法？", o:["@Ignore","@Skip","@Disabled","@Test(skip=true)"], a:0, e:"被 @Ignore 标记的测试方法会计入报告中的 Skipped。"}
+]},
+{ id:11, title:"版本管理", icon:"🏷️", qs:[
+  {q:"Maven 的版本号定义约定是？", o:["<主版本>.<次版本>.<增量版本>-<里程碑版本>","<次版本>.<主版本>.<增量版本>-<里程碑版本>","<主版本>-<次版本>-<增量版本>.<里程碑版本>","<年份>.<月份>.<日期>"], a:0, e:"主版本和次版本、次版本和增量版本之间用点号分隔，里程碑版本之前用连字号分隔。"},
+  {q:"版本 `1.3.4-beta-2` 中的“4”表示？", o:["增量版本","次版本","主版本","里程碑版本"], a:0, e:"1 是主版本，3 是次版本，4 是增量版本，beta-2 是里程碑版本。"},
+  {q:"发布 1.4.0 后发现一个影响功能的重大 Bug，修复后应该发布哪个版本？", o:["1.4.1","1.5.0","2.0.0","1.4.0-beta-1"], a:0, e:"增量版本一般表示重大 Bug 的修复。"},
+  {q:"Maven 比较 `1.2-beta-3` 和 `1.2-beta-11` 时，认为哪个更大？", o:["1.2-beta-3","1.2-beta-11","两者相等","无法比较，报错"], a:0, e:"里程碑版本只进行简单的字符串比较，所以 1.2-beta-3 > 1.2-beta-11，这一点需要留意。"},
+  {t:"o", q:"请按 Maven 的比较规则把这些版本从小到大排列：", o:["1.3.9","1.3.11","1.4","1.5"], e:"主、次、增量版本基于数字比较，所以 1.3.11 > 1.3.9。"},
+  {q:"版本管理（Version Management）和版本控制（Version Control）的区别是？", o:["版本管理指项目整体版本的演变，版本控制指用 Git 等工具追踪代码的每一个变更","两者是同一个概念","版本管理指用 Git 追踪代码，版本控制指项目版本演变","版本管理只针对 SNAPSHOT 版本"], a:0, e:"版本管理例如从 1.0-SNAPSHOT 到 1.0，再到 1.1-SNAPSHOT 的演变过程。"},
+  {q:"一个版本号中，一般一定会声明的是哪两部分？", o:["主版本和次版本","主版本和增量版本","次版本和里程碑版本","增量版本和里程碑版本"], a:0, e:"增量版本和里程碑不一定有，比如 3.8；但不会有人省略次版本。"}
+]},
+{ id:12, title:"灵活的构建", icon:"🎛️", qs:[
+  {q:"Maven 为支持构建的灵活性，内置的两大特性是？", o:["属性和 Profile","聚合和继承","镜像和私服","插件和生命周期"], a:0, e:"属性和 Profile 是创建灵活构建的基础。"},
+  {q:"内置属性 `${basedir}` 表示？", o:["项目根目录，即包含 pom.xml 的目录","Maven 安装目录","本地仓库目录","用户主目录"], a:0, e:"另一个常用的内置属性是 `${version}`，表示项目版本。"},
+  {q:"`${project.build.directory}` 的默认值是？", o:["target/","src/main/java/","target/classes/","build/"], a:0, e:"它表示项目构建输出目录；`target/classes/` 是主代码编译输出目录。"},
+  {q:"在 POM 中引用 JAVA_HOME 环境变量的写法是？", o:["`${env.JAVA_HOME}`","`${JAVA_HOME}`","`${system.JAVA_HOME}`","`%JAVA_HOME%`"], a:0, e:"所有环境变量都可以用以 env. 开头的 Maven 属性引用。"},
+  {q:"`${user.home}` 属于哪一类 Maven 属性？", o:["Java 系统属性","环境变量属性","Settings 属性","POM 属性"], a:0, e:"所有 Java 系统属性都可以用 Maven 属性引用，可以用 `mvn help:system` 查看。"},
+  {q:"`${settings.localRepository}` 指向的是？", o:["用户本地仓库的地址","Maven 安装目录","中央仓库地址","项目输出目录"], a:0, e:"以 settings. 开头的属性引用 settings.xml 中元素的值。"},
+  {q:"`${project.build.finalName}` 的默认值是？", o:["`${project.artifactId}-${project.version}`","`${project.groupId}-${project.artifactId}`","`${project.name}`","`${project.artifactId}`"], a:0, e:"它是项目打包输出文件的名称，比如 hello-world-1.0-SNAPSHOT。"},
+  {q:"希望某个 profile 对所有项目都默认激活，应该怎么做？", o:["在 settings.xml 的 activeProfiles 中配置它","在每个 POM 的 modules 中配置它","在 MANIFEST.MF 中声明","在命令行加 -U"], a:0, e:"第 9 章配置 Nexus 仓库时就用了这种方式。"}
+]},
+{ id:13, title:"编写Maven插件", icon:"🔌", qs:[
+  {q:"插件本身也是 Maven 项目，它的 packaging 必须是？", o:["maven-plugin","jar","pom","plugin"], a:0, e:"插件项目特殊的地方在于 packaging 必须是 maven-plugin（构件扩展名仍然是 jar）。"},
+  {q:"Maven 把插件中的每个目标称为什么？", o:["Mojo","POJO","Bean","Goal Class"], a:0, e:"Mojo 即 Maven Old Java Object，与 POJO 相对应。"},
+  {q:"每个 Mojo 都必须继承哪个类，并实现哪个方法？", o:["继承 AbstractMojo，实现 execute()","继承 Plugin，实现 run()","继承 Object，实现 main()","实现 Runnable 接口的 run()"], a:0, e:"只有这样 Maven 才能识别该插件目标，并执行 execute() 方法中的行为。"},
+  {q:"调用 log-maven-plugin 的 log 目标时，给 message 参数传值的写法是？", o:["`-Dmessage='Hello Tom.'`","`--message 'Hello Tom.'`","`-Pmessage='Hello Tom.'`","`message='Hello Tom.'`"], a:0, e:"完整命令：`mvn com.chenanguo.mvnbook:log-maven-plugin:1.0-SNAPSHOT:log -Dmessage='Hello Tom.'`"},
+  {t:"o", q:"请按顺序排列编写 Maven 插件的步骤：", o:["创建 maven-plugin 项目","编写继承 AbstractMojo 的目标类","为目标提供配置点","编写代码实现目标行为","错误处理及日志","测试插件"], e:"这是编写 Maven 插件的一般步骤。"},
+  {q:"能把所有依赖解压合并成单一 Fat JAR 的打包插件是？", o:["maven-shade-plugin","maven-jar-plugin","maven-install-plugin","maven-clean-plugin"], a:0, e:"maven-jar-plugin 不包含依赖；maven-shade-plugin 合并所有依赖；maven-assembly-plugin 可自定义输出多种格式。"}
+]}
+];
+
+/* ============================================================
+ * 存档
+ * ============================================================ */
+const SAVE_KEY = "mavenQuestSave_v1";
+function loadSave(){
+  try { return Object.assign({stars:{}, best:{}, wrong:[]}, JSON.parse(localStorage.getItem(SAVE_KEY) || "{}")); }
+  catch(e){ return {stars:{}, best:{}, wrong:[]}; }
+}
+let save = loadSave();
+function persist(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch(e){} }
+
+/* ============================================================
+ * 工具函数
+ * ============================================================ */
+const $ = id => document.getElementById(id);
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function md(s){ return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>"); }
+function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function starStr(n, total=3){ return "⭐".repeat(n) + "☆".repeat(total-n); }
+function show(id){ ["home","play","result"].forEach(s => $(s).classList.toggle("hidden", s!==id)); window.scrollTo(0,0); }
+function qKey(ch, idx){ return ch + "-" + idx; }
+function findQ(key){ const [ch, idx] = key.split("-").map(Number); const c = CHAPTERS.find(c => c.id===ch); return c && c.qs[idx] ? {ch, idx, q:c.qs[idx]} : null; }
+
+/* ============================================================
+ * 首页地图
+ * ============================================================ */
+function renderHome(){
+  save.wrong = save.wrong.filter(k => findQ(k));
+  const totalStars = Object.values(save.stars).reduce((a,b)=>a+b, 0);
+  const cleared = CHAPTERS.filter(c => (save.stars[c.id]||0) > 0).length;
+  const totalBest = Object.values(save.best).reduce((a,b)=>a+b, 0);
+  $("sStars").textContent = totalStars + "/" + CHAPTERS.length*3;
+  $("sClear").textContent = cleared + "/" + CHAPTERS.length;
+  $("sScore").textContent = totalBest;
+  $("sWrong").textContent = save.wrong.length;
+
+  const map = $("map");
+  map.innerHTML = "";
+  CHAPTERS.forEach(c => {
+    const st = save.stars[c.id] || 0;
+    const b = document.createElement("button");
+    b.className = "card";
+    b.innerHTML = `<div class="no">第 ${c.id} 章 · ${c.qs.length} 题</div>
+      <div class="name">${c.icon} ${esc(c.title)}</div>
+      <div class="meta"><span class="stars">${starStr(st)}</span><span>${save.best[c.id] ? "最高 " + save.best[c.id] : "未挑战"}</span></div>`;
+    b.onclick = () => startLevel(c.id);
+    map.appendChild(b);
+  });
+
+  const boss = document.createElement("button");
+  boss.className = "card special";
+  boss.innerHTML = `<div class="no">综合关 · 随机 15 题</div>
+    <div class="name">👑 终极挑战</div>
+    <div class="meta"><span class="stars">${starStr(save.stars.boss||0)}</span><span>${save.best.boss ? "最高 " + save.best.boss : "全章节混合"}</span></div>`;
+  boss.onclick = () => startLevel("boss");
+  map.appendChild(boss);
+
+  const wb = document.createElement("button");
+  wb.className = "card wrongbook";
+  wb.innerHTML = `<div class="no">复习模式 · 不扣心</div>
+    <div class="name">📕 错题本</div>
+    <div class="meta"><span>${save.wrong.length ? save.wrong.length + " 道待复习" : "暂无错题 🎉"}</span><span>答对即移出</span></div>`;
+  wb.onclick = () => { if(save.wrong.length) startLevel("wrong"); };
+  if(!save.wrong.length) wb.style.opacity = .6;
+  map.appendChild(wb);
+
+  show("home");
+}
+
+/* ============================================================
+ * 关卡流程
+ * ============================================================ */
+let S = null; // 当前关卡状态
+
+function startLevel(id){
+  let queue, name;
+  if(id === "boss"){
+    const all = [];
+    CHAPTERS.forEach(c => c.qs.forEach((q, i) => all.push({ch:c.id, idx:i, q})));
+    queue = shuffle(all).slice(0, 15);
+    name = "👑 终极挑战";
+  } else if(id === "wrong"){
+    queue = shuffle(save.wrong.map(findQ).filter(Boolean));
+    name = "📕 错题本复习";
+  } else {
+    const c = CHAPTERS.find(c => c.id === id);
+    queue = shuffle(c.qs.map((q, i) => ({ch:c.id, idx:i, q})));
+    name = `${c.icon} 第 ${c.id} 章 · ${c.title}`;
+  }
+  S = {id, name, queue, i:0, hearts: id==="wrong" ? null : 3, score:0, combo:0, maxCombo:0, right:0, answered:false};
+  $("lvName").textContent = name;
+  show("play");
+  renderQuestion();
+}
+
+function renderHUD(){
+  $("hearts").textContent = S.hearts === null ? "∞ 复习中" : "❤️".repeat(S.hearts) + "🖤".repeat(3 - S.hearts);
+  $("score").textContent = S.score;
+  $("combo").textContent = S.combo;
+  $("comboPill").classList.toggle("combo", S.combo >= 3);
+  $("prog").style.width = (S.i / S.queue.length * 100) + "%";
+}
+
+function renderQuestion(){
+  S.answered = false;
+  renderHUD();
+  const item = S.queue[S.i];
+  const q = item.q;
+  const box = $("qbox");
+  box.classList.remove("shake","pop");
+  const fromCh = (S.id === "boss" || S.id === "wrong") ? ` · 来自第 ${item.ch} 章` : "";
+  const typeName = q.t === "o" ? "排序题" : q.tf ? "判断题" : "单选题";
+  box.innerHTML = `<span class="qtype">${typeName} ${S.i+1}/${S.queue.length}${fromCh}</span>
+    <div class="qtext">${md(q.q)}</div><div id="qbody"></div><div id="fb"></div>`;
+  const body = $("qbody");
+
+  if(q.t === "o") return renderOrder(q, body);
+
+  if(q.tf){
+    body.className = "opts tf";
+    [["✔ 正确", true], ["✘ 错误", false]].forEach(([label, val], n) => {
+      const b = document.createElement("button");
+      b.className = "opt";
+      b.dataset.k = n+1;
+      b.innerHTML = esc(label);
+      b.onclick = () => {
+        const ok = val === q.a;
+        markOptions(body, b, ok, [...body.children].find((_, i) => (i===0) === q.a));
+        answer(ok, q.a ? "正确" : "错误");
+      };
+      body.appendChild(b);
+    });
+    return;
+  }
+
+  body.className = "opts";
+  const order = shuffle(q.o.map((_, i) => i));
+  let correctBtn;
+  order.forEach((oi, n) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.dataset.k = n+1;
+    b.innerHTML = `<span class="k">${n+1}</span><span>${md(q.o[oi])}</span>`;
+    if(oi === q.a) correctBtn = b;
+    b.onclick = () => {
+      const ok = oi === q.a;
+      markOptions(body, b, ok, correctBtn);
+      answer(ok, q.o[q.a]);
+    };
+    body.appendChild(b);
+  });
+}
+
+function markOptions(body, picked, ok, correctBtn){
+  [...body.children].forEach(b => b.disabled = true);
+  picked.classList.add(ok ? "ok" : "bad");
+  if(!ok && correctBtn) correctBtn.classList.add("ok");
+}
+
+function renderOrder(q, body){
+  body.innerHTML = `<div class="zone-label">你的顺序（点击可撤回）</div><div class="slots" id="slots"></div>
+    <div class="zone-label">候选项（按顺序点击）</div><div class="pool" id="pool"></div>
+    <div class="row"><button class="btn" id="okBtn" disabled>确认答案</button><button class="btn ghost" id="resetOrder">重置</button></div>`;
+  let pool = shuffle(q.o);
+  if(pool.join("|") === q.o.join("|")) pool = pool.slice(1).concat(pool[0]);
+  let picked = [];
+  const draw = () => {
+    const slots = $("slots"), poolEl = $("pool");
+    slots.innerHTML = ""; poolEl.innerHTML = "";
+    picked.forEach((t, n) => {
+      const c = document.createElement("button");
+      c.className = "chip"; c.dataset.n = n+1; c.innerHTML = md(t);
+      c.onclick = () => { if(S.answered) return; picked.splice(n, 1); draw(); };
+      slots.appendChild(c);
+    });
+    pool.filter(t => !picked.includes(t)).forEach(t => {
+      const c = document.createElement("button");
+      c.className = "chip"; c.innerHTML = md(t);
+      c.onclick = () => { if(S.answered) return; picked.push(t); draw(); };
+      poolEl.appendChild(c);
+    });
+    $("okBtn").disabled = picked.length !== q.o.length || S.answered;
+  };
+  draw();
+  $("resetOrder").onclick = () => { if(!S.answered){ picked = []; draw(); } };
+  $("okBtn").onclick = () => {
+    const ok = picked.join("|") === q.o.join("|");
+    $("okBtn").disabled = true; $("resetOrder").disabled = true;
+    answer(ok, q.o.join(" → "));
+  };
+}
+
+function answer(ok, correctText){
+  if(S.answered) return;
+  S.answered = true;
+  const item = S.queue[S.i];
+  const key = qKey(item.ch, item.idx);
+  const box = $("qbox");
+  let gain = 0;
+  if(ok){
+    S.combo++; S.right++;
+    S.maxCombo = Math.max(S.maxCombo, S.combo);
+    gain = 100 + (S.combo - 1) * 20;
+    S.score += gain;
+    if(S.id === "wrong") save.wrong = save.wrong.filter(k => k !== key);
+    box.classList.add("pop");
+  } else {
+    S.combo = 0;
+    if(S.hearts !== null) S.hearts--;
+    if(!save.wrong.includes(key)) save.wrong.push(key);
+    box.classList.add("shake");
+  }
+  persist();
+  renderHUD();
+
+  const last = S.i >= S.queue.length - 1 || S.hearts === 0;
+  const fb = $("fb");
+  fb.className = "fb " + (ok ? "ok" : "bad");
+  fb.innerHTML = `<h3>${ok ? `✅ 回答正确！+${gain}${S.combo >= 2 ? `（${S.combo} 连击）` : ""}` : (S.hearts === 0 ? "💔 回答错误，生命值耗尽！" : "❌ 回答错误")}</h3>
+    ${ok ? "" : `<div class="ans">正确答案：<b>${md(correctText)}</b></div>`}
+    <div>💡 ${md(item.q.e)}</div>
+    <div class="row"><button class="btn gold" id="nextBtn">${last ? "查看结果 →" : "下一题 →"}</button></div>`;
+  $("nextBtn").onclick = next;
+  $("nextBtn").focus({preventScroll:true});
+  fb.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function next(){
+  if(!S.answered) return;
+  if(S.hearts === 0) return finish(false);
+  S.i++;
+  if(S.i >= S.queue.length) return finish(true);
+  renderQuestion();
+}
+
+/* ============================================================
+ * 结算
+ * ============================================================ */
+function finish(passed){
+  const total = S.queue.length;
+  const stars = passed && S.hearts !== null ? S.hearts : 0;
+  let newRecord = false;
+  if(S.id !== "wrong"){
+    if(stars > (save.stars[S.id] || 0)) save.stars[S.id] = stars;
+    if(S.score > (save.best[S.id] || 0)){ save.best[S.id] = S.score; newRecord = true; }
+    persist();
+  }
+  const isChapter = typeof S.id === "number";
+  const nextId = isChapter && S.id < CHAPTERS.length ? S.id + 1 : null;
+
+  let title, big;
+  if(S.id === "wrong"){
+    title = save.wrong.length ? "复习完成！" : "错题本清空啦！🎉";
+    big = "📕";
+  } else if(!passed){
+    title = "挑战失败，再接再厉！"; big = "💔";
+  } else {
+    title = ["", "勉强过关！", "表现不错！", "完美通关！"][stars]; big = starStr(stars);
+  }
+
+  $("result").innerHTML = `<div class="result">
+    <div class="big">${big}</div>
+    <h2>${title}</h2>
+    <div style="color:var(--muted)">${esc(S.name)}${newRecord ? " · 🏆 新纪录！" : ""}</div>
+    <div class="rows">
+      <div class="stat"><b>${S.score}</b><small>得分</small></div>
+      <div class="stat"><b>${S.right}/${passed ? total : S.i + 1}</b><small>答对</small></div>
+      <div class="stat"><b>${S.maxCombo}</b><small>最大连击</small></div>
+      ${S.id === "wrong" ? `<div class="stat"><b>${save.wrong.length}</b><small>剩余错题</small></div>` : ""}
+    </div>
+    <div class="row">
+      ${nextId && passed ? `<button class="btn gold" id="rNext">下一章 →</button>` : ""}
+      ${S.id === "wrong" && !save.wrong.length ? "" : `<button class="btn" id="rAgain">${S.id === "wrong" ? "继续复习" : "再玩一次"}</button>`}
+      <button class="btn ghost" id="rHome">返回地图</button>
+    </div></div>`;
+  show("result");
+  const lvl = S.id;
+  if($("rNext")) $("rNext").onclick = () => startLevel(nextId);
+  if($("rAgain")) $("rAgain").onclick = () => startLevel(lvl);
+  $("rHome").onclick = renderHome;
+  if(stars === 3) confetti();
+}
+
+function confetti(){
+  const items = ["🎉","⭐","✨","🎊","☕"];
+  for(let i=0;i<40;i++){
+    const s = document.createElement("div");
+    s.className = "confetti";
+    s.textContent = items[i % items.length];
+    s.style.left = Math.random()*100 + "vw";
+    s.style.animationDuration = (2 + Math.random()*2) + "s";
+    s.style.animationDelay = Math.random()*0.8 + "s";
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 5000);
+  }
+}
+
+/* ============================================================
+ * 事件绑定
+ * ============================================================ */
+$("quitBtn").onclick = () => { if(!S || S.i === 0 && !S.answered || confirm("确定退出本关吗？当前进度不会保存。")) renderHome(); };
+$("resetBtn").onclick = e => {
+  e.preventDefault();
+  if(confirm("确定清空所有星星、最高分和错题本吗？")){ save = {stars:{}, best:{}, wrong:[]}; persist(); renderHome(); }
+};
+document.addEventListener("keydown", e => {
+  if($("play").classList.contains("hidden") || !S) return;
+  if(S.answered && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); next(); return; }
+  if(!S.answered && /^[1-4]$/.test(e.key)){
+    const b = document.querySelector(`#qbody .opt[data-k="${e.key}"]`);
+    if(b && !b.disabled) b.click();
+  }
+});
+
+renderHome();
+</script>
+</body>
+</html>
